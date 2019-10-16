@@ -3,6 +3,7 @@
   <div id="app">
     <div class="container1">
       <div class="chart-container">
+        <h1>Composicion de la Asamble Nacional</h1>
         <chart v-bind="{svg}" class="chart" />
       </div>
       <div class="steps-container">
@@ -12,7 +13,8 @@
           class="steps"
           :id="['step_'+[i+1]]"
           ref="steps"
-        >{{step.step}}</div>
+          v-html="step.step"
+        ></div>
       </div>
     </div>
   </div>
@@ -24,15 +26,19 @@ import chart from "./components/chart";
 import { TweenLite, TweenLineMax } from "gsap";
 import VueScrollmagic from "vue-scrollmagic";
 import Vue from "vue";
+import * as d3 from "d3";
+import { group } from "d3-array";
 
 Vue.use(VueScrollmagic);
+
 export default {
   name: "app",
   components: { chart },
   data() {
     return {
       stepsText: steps,
-      svg: { height: 700, width: 1100, left: 30, right: 30, top: 30 }
+      svg: { height: 700, width: 1100, left: 30, right: 30, top: 30 },
+      diputadosXBancadas: []
     };
   },
 
@@ -40,6 +46,25 @@ export default {
     //Setup animacion del texto
     const textElements = this.$refs.steps; // Selecciona los pasos
     this.setTextScenes(textElements);
+
+    // Load the data
+    d3.csv("/Data/consolidado.csv", data => ({
+      diputado: data.name,
+      condicion: data.condicion,
+      bancada: data.bancada,
+      bancada2: this.swichtBancadas(data.bancada),
+      partido: data.partido,
+      edo: data.estado,
+      circuscripcion: data.circuscripcion,
+      suplente: data.suplente,
+      estadoLegalPrincipal: data.estado_legal_principal,
+      estadoLegalSuplente: data.estado_legal_suplente
+    }))
+      .then(data => d3.group(data, d => d.bancada2))
+      .then(data => Array.from(data))
+      .then(d => (this.diputadosXBancadas = d));
+
+    this.test("#step_2");
   },
   methods: {
     // Crea escena por cada paso
@@ -54,6 +79,36 @@ export default {
           .setTween(textAppear)
           .addIndicators({ name: `${obj.id}` });
         this.$scrollmagic.addScene(sceneText);
+      }
+    },
+    test(triEl) {
+      const testScene = this.$scrollmagic
+        .scene({
+          triggerElement: triEl,
+          triggerHook: 0.5
+        })
+        .on("enter", () => {
+          console.log(this.diputadosXBancadas);
+        });
+      this.$scrollmagic.addScene(testScene);
+    },
+    swichtBancadas(ban) {
+      switch (ban) {
+        case "MUD":
+          return "OPOSICION";
+          break;
+
+        case "CONCERTACION":
+          return "OPOSICION";
+          break;
+
+        case "16-J":
+          return "OPOSICION";
+          break;
+
+        case "PSUV":
+          return "GGP";
+          break;
       }
     }
   }
@@ -79,6 +134,7 @@ export default {
   flex-direction: column;
 }
 .steps {
+  background-color: "#ffffff";
   opacity: 0;
   margin: 10em 0 10em 0;
   display: flex;
