@@ -4,7 +4,7 @@
     <div class="container1">
       <div class="chart-container">
         <h1>Composicion de la Asamble Nacional</h1>
-        <chart v-bind="{svg}" class="chart" />
+        <chart v-bind="{svg, plotDiputados}" class="chart" />
       </div>
       <div class="steps-container">
         <div
@@ -28,8 +28,11 @@ import VueScrollmagic from "vue-scrollmagic";
 import Vue from "vue";
 import * as d3 from "d3";
 import { group } from "d3-array";
+import _ from "lodash";
 
 Vue.use(VueScrollmagic);
+
+const colors = ["#fb3640", "#772271", "#579633", "#2e86ab"];
 
 export default {
   name: "app",
@@ -38,7 +41,14 @@ export default {
     return {
       stepsText: steps,
       svg: { height: 700, width: 1100, left: 30, right: 30, top: 30 },
-      diputadosXBancadas: []
+      diputadosXBancadas: [],
+      bancadas: ["oposicion", "oposicion minoritaria", "GPP", "Disidentes GGP"],
+      bancadasCS: [
+        "GGP",
+        "oposicion minoritaria",
+        "Disidentes GGP",
+        "oposicion"
+      ]
     };
   },
 
@@ -60,11 +70,33 @@ export default {
       estadoLegalPrincipal: data.estado_legal_principal,
       estadoLegalSuplente: data.estado_legal_suplente
     }))
-      .then(data => d3.group(data, d => d.bancada2))
-      .then(data => Array.from(data))
+      .then(data => group(data, d => d.bancada2))
+      .then(data => Array.from(data, ([key, value]) => ({ key, value })))
       .then(d => (this.diputadosXBancadas = d));
 
     this.test("#step_2");
+  },
+  computed: {
+    plotDiputados() {
+      const bancadasToLower = this.bancadas.map(d => d.toLowerCase());
+
+      const distrGroups = d3
+        .scalePoint()
+        .domain(bancadasToLower)
+        .range([0, this.svg.width])
+        .padding(0.5);
+
+      console.log("test dist", distrGroups("ggp"));
+      const test = [];
+      this.diputadosXBancadas.forEach(ban =>
+        test.push({
+          bancada: ban.key,
+          diputados: this.crossArrays(ban.value, 10),
+          groupX: distrGroups(ban.key.toLowerCase())
+        })
+      );
+      return test;
+    }
   },
   methods: {
     // Crea escena por cada paso
@@ -107,9 +139,44 @@ export default {
           break;
 
         case "PSUV":
-          return "GGP";
+          return "GPP";
           break;
       }
+    },
+    crossArrays(array, chunk) {
+      const bancadaLowerCase = this.bancadasCS.map(d => d.toLowerCase());
+      const col = d3
+        .scaleOrdinal()
+        .domain(this.bancadasCS)
+        .range(colors);
+
+      const chunks = _.chunk(array, chunk);
+
+      const flatenArray = [];
+      // prettier-ignore
+      const verticalGap = 30
+      const horizontalGap = 30;
+
+      chunks.forEach((arr, index) => {
+        arr.forEach((obj, i) => {
+          flatenArray.push({
+            diputado: obj.diputado,
+            condicion: obj.condicion,
+            bancada: obj.bancada,
+            partido: obj.partido,
+            edo: obj.edo,
+            circuscripcion: obj.circuscripcion,
+            suplente: obj.suplente,
+            estadoLegalPrincipal: obj.estadoLegalPrincipal,
+            estadoLegalSuplente: obj.estadoLegalSuplente,
+            x: i * horizontalGap,
+            y: index * verticalGap,
+            fill: col(obj.bancada2.toLowerCase())
+          });
+        });
+      });
+
+      return flatenArray;
     }
   }
 };
