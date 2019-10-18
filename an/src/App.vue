@@ -44,9 +44,9 @@ export default {
       diputadosXBancadas: [],
       bancadas: ["oposicion", "oposicion minoritaria", "GPP", "Disidentes GGP"],
       bancadasCS: [
-        "GGP",
+        "GPP",
         "oposicion minoritaria",
-        "Disidentes GGP",
+        "Disidentes GPP",
         "oposicion"
       ]
     };
@@ -92,7 +92,9 @@ export default {
         test.push({
           bancada: ban.key,
           diputados: this.crossArrays(ban.value, 10),
-          groupX: distrGroups(ban.key.toLowerCase())
+          groupX: distrGroups(ban.key.toLowerCase()),
+          banColor: this.bancadaColorScale(ban.key.toLowerCase()),
+          count: 0
         })
       );
       return test;
@@ -143,13 +145,17 @@ export default {
           break;
       }
     },
-    crossArrays(array, chunk) {
+    bancadaColorScale(val) {
+      // const col = bancadaColorScale
       const bancadaLowerCase = this.bancadasCS.map(d => d.toLowerCase());
+
       const col = d3
         .scaleOrdinal()
-        .domain(this.bancadasCS)
+        .domain(bancadaLowerCase)
         .range(colors);
-
+      return col(val);
+    },
+    crossArrays(array, chunk) {
       const chunks = _.chunk(array, chunk);
 
       const flatenArray = [];
@@ -171,7 +177,7 @@ export default {
             estadoLegalSuplente: obj.estadoLegalSuplente,
             x: i * horizontalGap,
             y: index * verticalGap,
-            fill: col(obj.bancada2.toLowerCase())
+            fill: this.bancadaColorScale(obj.bancada2.toLowerCase())
           });
         });
       });
@@ -217,6 +223,15 @@ export default {
   top: 0;
 }
 svg {
-  background: yellowgreen;
+  background: rgb(245, 245, 245);
+}
+
+.count-container {
+  font-size: 38px;
+  font-weight: 600;
+}
+.count {
+  font-size: 60px;
+  font-weight: 600;
 }
 </style>
