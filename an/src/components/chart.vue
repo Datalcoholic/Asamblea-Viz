@@ -19,9 +19,18 @@
             :fill="dip.fill"
             rx="5"
             ry="5"
+            ref="dip"
           />
 
-          <rect :y="400" width="295" height="120" :fill="ban.banColor" rx="8" ry="8" />
+          <rect
+            class="txtBackground"
+            :y="400"
+            width="295"
+            height="120"
+            :fill="ban.banColor"
+            rx="8"
+            ry="8"
+          />
           <text class="count-container" x="12" :y="440" fill="#ffffff">{{ban.bancada}}</text>
           <text class="count" x="12" :y="500" fill="#ffffff">{{ban.count}}</text>
           {{ban.bancada}}

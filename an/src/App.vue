@@ -3,8 +3,8 @@
   <div id="app">
     <div class="container1">
       <div class="chart-container">
-        <h1>Composicion de la Asamble Nacional</h1>
-        <chart v-bind="{svg, plotDiputados}" class="chart" />
+        <h1>Composicion de la Asamblea Nacional</h1>
+        <chart v-bind="{svg, plotDiputados}" class="chart"/>
       </div>
       <div class="steps-container">
         <div
@@ -13,8 +13,9 @@
           class="steps"
           :id="['step_'+[i+1]]"
           ref="steps"
-          v-html="step.step"
-        ></div>
+        >
+          <p v-html="step.step"></p>
+        </div>
       </div>
     </div>
   </div>
@@ -27,7 +28,7 @@ import { TweenLite, TweenLineMax } from "gsap";
 import VueScrollmagic from "vue-scrollmagic";
 import Vue from "vue";
 import * as d3 from "d3";
-import { group } from "d3-array";
+import { group, count } from "d3-array";
 import _ from "lodash";
 
 Vue.use(VueScrollmagic);
@@ -57,6 +58,9 @@ export default {
     const textElements = this.$refs.steps; // Selecciona los pasos
     this.setTextScenes(textElements);
 
+    this.enterStep("#step_1");
+    this.animationStep2("#step_2");
+
     // Load the data
     d3.csv("/Data/consolidado.csv", data => ({
       diputado: data.name,
@@ -73,8 +77,6 @@ export default {
       .then(data => group(data, d => d.bancada2))
       .then(data => Array.from(data, ([key, value]) => ({ key, value })))
       .then(d => (this.diputadosXBancadas = d));
-
-    this.test("#step_2");
   },
   computed: {
     plotDiputados() {
@@ -94,7 +96,7 @@ export default {
           diputados: this.crossArrays(ban.value, 10),
           groupX: distrGroups(ban.key.toLowerCase()),
           banColor: this.bancadaColorScale(ban.key.toLowerCase()),
-          count: 0
+          count: ban.value.length
         })
       );
       return test;
@@ -115,16 +117,58 @@ export default {
         this.$scrollmagic.addScene(sceneText);
       }
     },
-    test(triEl) {
+    //inicio de la animaciones de pasos
+    enterStep(triEl) {
+      const tl = new TimelineMax();
+      tl.staggerTo(".diputados", 1, {
+        transformOrigin: "50% 50%",
+        opacity: 1,
+        stagger: { amount: 0.8, from: 0 }
+      }).fromTo(
+        [".txtBackground", ".count-container", ".count"],
+        0.8,
+        { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
+        { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
+        "-=0.9"
+      );
+
       const testScene = this.$scrollmagic
         .scene({
           triggerElement: triEl,
           triggerHook: 0.5
         })
-        .on("enter", () => {
-          console.log(this.diputadosXBancadas);
+        .setTween(tl)
+
+        .on("enter", event => {
+          // console.log("test", this.$refs);
+          console.log(event.scrollDirection);
+          tl.staggerTo(".diputados", 1, {
+            transformOrigin: "50% 50%",
+            opacity: 1,
+            stagger: { amount: 0.8, from: 0 }
+          }).fromTo(
+            [".txtBackground", ".count-container", ".count"],
+            0.8,
+            { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
+            { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
+            "-=0.9"
+          );
         });
+
       this.$scrollmagic.addScene(testScene);
+    },
+
+    animationStep2(triEl) {
+      const sceneStep2 = this.$scrollmagic
+        .scene({
+          triggerElement: triEl,
+          triggerHook: 0.5
+        })
+        .on("enter", () => {
+          console.log(this.$attrs);
+        });
+
+      this.$scrollmagic.addScene(sceneStep2);
     },
     swichtBancadas(ban) {
       switch (ban) {
@@ -207,15 +251,18 @@ export default {
   flex-direction: column;
 }
 .steps {
-  background-color: "#ffffff";
-  opacity: 0;
+  text-align: initial;
+
+  font-size: 22px;
+  background-color: #eeeeee94;
   margin: 10em 0 10em 0;
-  display: flex;
-  align-items: center;
   min-height: 150px;
   width: 50vw;
   border: 1px solid blue;
   border-radius: 14px;
+}
+.steps p {
+  margin-left: 20px;
 }
 
 .chart-container {
@@ -233,5 +280,27 @@ svg {
 .count {
   font-size: 60px;
   font-weight: 600;
+}
+.diputados {
+  /* transform: scale(1); */
+  opacity: 0;
+}
+
+.txtBackground,
+.count-container,
+.count {
+  opacity: 0;
+}
+.oposicion {
+  text-align: center;
+  color: #fdfdfd;
+  background-color: #2e86ab;
+  border-radius: 5px;
+}
+.gpp {
+  text-align: center;
+  color: #fdfdfd;
+  background-color: #fb3640;
+  border-radius: 5px;
 }
 </style>
