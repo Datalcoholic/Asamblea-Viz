@@ -4,7 +4,7 @@
     <div class="container1">
       <div class="chart-container">
         <h1>Composicion de la Asamblea Nacional</h1>
-        <chart v-bind="{svg, plotDiputados}" class="chart"/>
+        <chart v-bind="{svg, plotDiputados}" class="chart" />
       </div>
       <div class="steps-container">
         <div
@@ -60,6 +60,7 @@ export default {
 
     this.enterStep("#step_1");
     this.animationStep2("#step_2");
+    this.animationStep3("#step_3");
 
     // Load the data
     d3.csv("/Data/consolidado.csv", data => ({
@@ -86,7 +87,7 @@ export default {
         .scalePoint()
         .domain(bancadasToLower)
         .range([0, this.svg.width])
-        .padding(0.5);
+        .padding(0.2);
 
       console.log("test dist", distrGroups("ggp"));
       const test = [];
@@ -141,7 +142,7 @@ export default {
 
         .on("enter", event => {
           // console.log("test", this.$refs);
-          console.log(event.scrollDirection);
+          //console.log(event.scrollDirection);
           tl.staggerTo(".diputados", 1, {
             transformOrigin: "50% 50%",
             opacity: 1,
@@ -159,16 +160,99 @@ export default {
     },
 
     animationStep2(triEl) {
+      const tl = new TimelineMax();
       const sceneStep2 = this.$scrollmagic
         .scene({
           triggerElement: triEl,
           triggerHook: 0.5
         })
         .on("enter", () => {
-          console.log(this.$attrs);
+          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
+          const dipDesincorporados = foo.filter(
+            d => d.getAttribute("edoLegalPricipal") === "desinrcorporado"
+          );
+
+          // Cambiar count
+          const dD = this.plotDiputados[0].diputados;
+          const dDnumber = dD.filter(
+            d => d.estadoLegalPrincipal !== "desinrcorporado"
+          ).length;
+          this.$set(this.plotDiputados[0], "count", dDnumber);
+          console.log("diputados", dDnumber);
+          //Animacion
+          tl.staggerTo(dipDesincorporados, 0.7, {
+            scale: 2,
+            stroke: "#fff",
+            x: 200,
+            stagger: { amount: 0.5 }
+          })
+            .staggerTo(dipDesincorporados, 0.7, {
+              fill: "#949494",
+              transformOrigin: "center top",
+              stagger: { amount: 0.5 }
+            })
+            .to(dipDesincorporados, 0.7, { x: 0, y: 11, scale: 1.05 });
         });
 
       this.$scrollmagic.addScene(sceneStep2);
+    },
+    animationStep3(triEl) {
+      //Set timeline
+      const tl = new TimelineMax();
+
+      //Set Scrollmagic
+      const sceneStep3 = this.$scrollmagic
+        .scene({
+          triggerElement: triEl,
+          triggerHook: 0.5,
+          duration: "300px"
+        })
+        .on("enter", () => {
+          //Get diputados disidentes MUD
+          const bar = this.plotDiputados[0].diputados;
+          const superBar = bar.filter(d => d.bancada === "CONCERTACION");
+
+          //Get elements to animate
+          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
+          const dipconcertacion = foo.filter(
+            d => d.getAttribute("bancada") === "concertacion"
+          );
+
+          // Add bancada
+          this.diputadosXBancadas.splice(1, 0, {
+            key: "oposicion minoritaria",
+            value: []
+          });
+          //Animate
+
+          //this.$set(this.diputadosXBancadas[1], "value", superBar);
+        })
+        .on("leave", () => {
+          //Get elements to animate
+          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
+          const dipconcertacion = foo.filter(
+            d => d.getAttribute("bancada") === "concertacion"
+          );
+
+          tl.to(dipconcertacion, 1, {
+            transformOrigin: "50% 50%",
+            opacity: 1,
+            stagger: { amount: 0.8, from: 0 }
+          }).fromTo(
+            [
+              "#oposicion-minoritaria.txtBackground",
+              "#oposicion-minoritaria.count-container",
+              "#oposicion-minoritaria.count"
+            ],
+            0.8,
+            { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
+            { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
+
+            "-=0.9"
+          );
+        });
+
+      this.$scrollmagic.addScene(sceneStep3);
     },
     swichtBancadas(ban) {
       switch (ban) {
@@ -239,7 +323,7 @@ export default {
 }
 
 .container1 {
-  height: 250vh;
+  height: 1000vh;
 }
 
 .steps-container {
@@ -302,5 +386,17 @@ svg {
   color: #fdfdfd;
   background-color: #fb3640;
   border-radius: 5px;
+}
+.vacios {
+  text-align: center;
+  color: #fdfdfd;
+  background-color: #949494;
+  border-radius: 5px;
+}
+
+#oposicion-minoritaria.txtBackground,
+#oposicion-minoritaria.count-container,
+#oposicion-minoritaria.count {
+  opacity: 0;
 }
 </style>

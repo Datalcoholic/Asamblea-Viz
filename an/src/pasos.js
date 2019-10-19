@@ -5,11 +5,15 @@ const textSteps = [
   },
   {
     step:
-      "Comenzando con la bancada de <spam class='oposicion'> Oposicion</spam>. El <spam class='gpp'>TSJ</spam> ordena la desincorporacion de los diputados electos por el estado <strong>Amazonas</strong> INSERTAR NOMBRES"
+      "Comenzando con la bancada de <spam class='oposicion'> Oposicion</spam>. El <spam class='gpp'>TSJ</spam> ordena la desincorporacion de los diputados electos por el estado <strong>Amazonas</strong> INSERTAR NOMBRES. Dejando estos curules <spam class='vacios'>vacios</spam>"
   },
   {
     step:
-      "<h1>PASO 1<h1/><br>Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia quaerat ullam, esse illo sed obcaecati tenetur quae iste expedita similique, velit voluptas excepturi et debitis corrupti atque repudiandae accusantium. Ex."
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia quaerat ullam, esse illo sed obcaecati tenetur quae iste expedita similique, velit voluptas excepturi et debitis corrupti atque repudiandae accusantium. Ex."
+  },
+  {
+    step:
+      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia quaerat ullam, esse illo sed obcaecati tenetur quae iste expedita similique, velit voluptas excepturi et debitis corrupti atque repudiandae accusantium. Ex."
   }
 ];
 

@@ -3,7 +3,7 @@
     <svg :height="svg.height" :width="svg.width" fill="#e6e6e6">
       <template v-for="ban in plotDiputados">
         <g
-          :id="ban.bancada"
+          :id="ban.bancada.toLowerCase().split(' ').join('-')"
           :key="ban.bancada"
           :style="`transform:translate(${ban.groupX}px, 50px)`"
         >
@@ -19,9 +19,10 @@
             :fill="dip.fill"
             rx="5"
             ry="5"
+            :edoLegalPricipal="dip.estadoLegalPrincipal"
+            :bancada="dip.bancada"
             ref="dip"
           />
-
           <rect
             class="txtBackground"
             :y="400"
@@ -30,9 +31,22 @@
             :fill="ban.banColor"
             rx="8"
             ry="8"
+            :id="ban.bancada.toLowerCase().split(' ').join('-')"
           />
-          <text class="count-container" x="12" :y="440" fill="#ffffff">{{ban.bancada}}</text>
-          <text class="count" x="12" :y="500" fill="#ffffff">{{ban.count}}</text>
+          <text
+            class="count-container"
+            x="12"
+            :y="440"
+            fill="#ffffff"
+            :id="ban.bancada.toLowerCase().split(' ').join('-')"
+          >{{ban.bancada}}</text>
+          <text
+            class="count"
+            x="12"
+            :y="500"
+            fill="#ffffff"
+            :id="ban.bancada.toLowerCase().split(' ').join('-')"
+          >{{ban.count}}</text>
           {{ban.bancada}}
           />
         </g>
