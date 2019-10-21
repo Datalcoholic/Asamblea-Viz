@@ -49,7 +49,9 @@ export default {
         "oposicion minoritaria",
         "Disidentes GPP",
         "oposicion"
-      ]
+      ],
+      newValue: [],
+      oldValue: []
     };
   },
 
@@ -76,7 +78,9 @@ export default {
       estadoLegalSuplente: data.estado_legal_suplente
     }))
       .then(data => group(data, d => d.bancada2))
-      .then(data => Array.from(data, ([key, value]) => ({ key, value })))
+      .then(data =>
+        Array.from(data, ([key, value]) => ({ key, value, count: 0 }))
+      )
       .then(d => (this.diputadosXBancadas = d));
   },
   computed: {
@@ -89,7 +93,6 @@ export default {
         .range([0, this.svg.width])
         .padding(0.2);
 
-      console.log("test dist", distrGroups("ggp"));
       const test = [];
       this.diputadosXBancadas.forEach(ban =>
         test.push({
@@ -97,13 +100,23 @@ export default {
           diputados: this.crossArrays(ban.value, 10),
           groupX: distrGroups(ban.key.toLowerCase()),
           banColor: this.bancadaColorScale(ban.key.toLowerCase()),
-          count: ban.value.length
+          count: ban.count
         })
       );
       return test;
     }
   },
+  watch: {
+    plotDiputados(newValue, oldValue) {
+      this.newValue = newValue;
+      this.oldValue = oldValue;
+
+      // console.log("new", newValue[0].count);
+      // console.log("old", oldValue[0].count);
+    }
+  },
   methods: {
+    //Animaciones
     // Crea escena por cada paso
     setTextScenes(Array) {
       for (const obj of Array) {
@@ -121,18 +134,6 @@ export default {
     //inicio de la animaciones de pasos
     enterStep(triEl) {
       const tl = new TimelineMax();
-      tl.staggerTo(".diputados", 1, {
-        transformOrigin: "50% 50%",
-        opacity: 1,
-        stagger: { amount: 0.8, from: 0 }
-      }).fromTo(
-        [".txtBackground", ".count-container", ".count"],
-        0.8,
-        { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
-        { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
-        "-=0.9"
-      );
-
       const testScene = this.$scrollmagic
         .scene({
           triggerElement: triEl,
@@ -141,19 +142,31 @@ export default {
         .setTween(tl)
 
         .on("enter", event => {
-          // console.log("test", this.$refs);
           //console.log(event.scrollDirection);
+
+          // Change counter
+          const newCountOpo = this.diputadosXBancadas[0].value.length;
+          const newCountGpp = this.diputadosXBancadas[1].value.length;
+          this.$set(this.diputadosXBancadas[0], "count", newCountOpo);
+          this.$set(this.diputadosXBancadas[1], "count", newCountGpp);
+
           tl.staggerTo(".diputados", 1, {
             transformOrigin: "50% 50%",
             opacity: 1,
             stagger: { amount: 0.8, from: 0 }
-          }).fromTo(
-            [".txtBackground", ".count-container", ".count"],
-            0.8,
-            { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
-            { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
-            "-=0.9"
-          );
+          })
+            .fromTo(
+              [".txtBackground", ".count-container", ".count"],
+              0.8,
+              { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
+              { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
+              "-=0.9"
+            )
+            .from([this.diputadosXBancadas[0], this.diputadosXBancadas[1]], 2, {
+              count: 0,
+              roundProps: "count",
+              ease: Power3.easeOut
+            });
         });
 
       this.$scrollmagic.addScene(testScene);
@@ -166,10 +179,11 @@ export default {
           triggerElement: triEl,
           triggerHook: 0.5
         })
+        .setTween(tl)
         .on("enter", () => {
           const foo = Array.from(this.$el.querySelectorAll(".diputados"));
           const dipDesincorporados = foo.filter(
-            d => d.getAttribute("edoLegalPricipal") === "desinrcorporado"
+            d => d.getAttribute("edoLegalPrincipal") === "desinrcorporado"
           );
 
           // Cambiar count
@@ -177,26 +191,161 @@ export default {
           const dDnumber = dD.filter(
             d => d.estadoLegalPrincipal !== "desinrcorporado"
           ).length;
-          this.$set(this.plotDiputados[0], "count", dDnumber);
-          console.log("diputados", dDnumber);
+
+          // Change diputados opisicion count
+          this.$set(this.diputadosXBancadas[0], "count", dDnumber);
+
           //Animacion
           tl.staggerTo(dipDesincorporados, 0.7, {
-            scale: 2,
+            transformOrigin: "50% 50%",
+            scale: 2.5,
             stroke: "#fff",
-            x: 200,
             stagger: { amount: 0.5 }
           })
+            .to(
+              dipDesincorporados,
+              0.7,
+              {
+                x: i => {
+                  return (i * i + 1) * 10;
+                }
+              },
+              "-=0.8"
+            )
             .staggerTo(dipDesincorporados, 0.7, {
-              fill: "#949494",
-              transformOrigin: "center top",
+              fill: "#d1d1d1",
+              stroke: "#949494",
               stagger: { amount: 0.5 }
             })
-            .to(dipDesincorporados, 0.7, { x: 0, y: 11, scale: 1.05 });
+            .to(dipDesincorporados, 0.7, { scale: 1.05, x: 0 })
+            .from(
+              this.diputadosXBancadas[0],
+              0.7,
+              {
+                count: this.oldValue[0].count,
+                roundProps: "count",
+                ease: Power3.easeOut
+              }
+              // "-=1"
+            );
         });
 
       this.$scrollmagic.addScene(sceneStep2);
     },
     animationStep3(triEl) {
+      //Set timeline
+      const tl = new TimelineMax();
+
+      //Set Scrollmagic
+      const sceneStep3 = this.$scrollmagic
+        .scene({
+          triggerElement: triEl,
+          triggerHook: 0.5
+          //duration: "300px"
+        })
+        .setTween(tl)
+        .on("enter", () => {
+          //Get diputados clandestinidad,exilio, asilo y detenido MUD
+          const bar = this.plotDiputados[0].diputados;
+          const superBar = bar.filter(
+            d =>
+              d.estadoLegalPrincipal === "asilo" ||
+              d.estadoLegalPrincipal === "exilio" ||
+              d.estadoLegalPrincipal === "clandestinidad" ||
+              d.estadoLegalPrincipal === "detenido"
+          );
+          const curulesVacios = superBar.filter(
+            d =>
+              d.estadoLegalSuplente === "asilo" ||
+              d.estadoLegalSuplente === "exilio" ||
+              d.estadoLegalSuplente === "clandestinidad" ||
+              d.estadoLegalSuplente === "detenido"
+          );
+
+          // Change count
+          this.$set(
+            this.diputadosXBancadas[0],
+            "count",
+            this.diputadosXBancadas[0].count - curulesVacios.length
+          );
+          //console.log("dipMUD", curulesVacios);
+          //Get elements to animate
+          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
+          const dipCondicion = foo.filter(d => {
+            const attr = d.getAttribute("edoLegalPrincipal");
+            const attr2 = d.getAttribute("edoLegalSuplente");
+            return (
+              (attr === "asilo" ||
+                attr === "exilio" ||
+                attr === "clandestinidad" ||
+                attr === "detenido") &&
+              attr2 !== "exilio"
+            );
+          });
+          const dipVacio = foo.filter(d => {
+            const attr = d.getAttribute("edoLegalPrincipal");
+            const attr2 = d.getAttribute("edoLegalSuplente");
+            return (
+              (attr === "asilo" ||
+                attr === "exilio" ||
+                attr === "clandestinidad" ||
+                attr === "detenido") &&
+              attr2 === "exilio"
+            );
+          });
+
+          console.log("elements", dipVacio);
+
+          // Add bancada
+          this.diputadosXBancadas.splice(1, 0, {
+            key: "oposicion minoritaria",
+            value: []
+          });
+          //Animate
+          tl.set("#over", { zindex: 10 });
+          tl.to([dipCondicion], 0.7, {
+            fill: "#41acda"
+          })
+            .to(dipVacio, 1, {
+              scale: 2.5,
+              fill: "#d1d1d1",
+              stroke: "#949494",
+              x: i => {
+                return (i * i + 1) * 10;
+              }
+            })
+            .to(dipVacio, 0.7, { scale: 1, x: 0 });
+
+          //this.$set(this.diputadosXBancadas[1], "value", superBar);
+        })
+        .on("leave", () => {
+          //Get elements to animate
+          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
+          const dipconcertacion = foo.filter(
+            d => d.getAttribute("bancada") === "concertacion"
+          );
+
+          tl.to(dipconcertacion, 1, {
+            transformOrigin: "50% 50%",
+            opacity: 1,
+            stagger: { amount: 0.8, from: 0 }
+          }).fromTo(
+            [
+              "#oposicion-minoritaria.txtBackground",
+              "#oposicion-minoritaria.count-container",
+              "#oposicion-minoritaria.count"
+            ],
+            0.8,
+            { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
+            { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
+
+            "-=0.9"
+          );
+        });
+
+      this.$scrollmagic.addScene(sceneStep3);
+    },
+    animationStep(triEl) {
       //Set timeline
       const tl = new TimelineMax();
 
@@ -283,6 +432,7 @@ export default {
         .range(colors);
       return col(val);
     },
+    //Tools
     crossArrays(array, chunk) {
       const chunks = _.chunk(array, chunk);
 
@@ -335,14 +485,14 @@ export default {
   flex-direction: column;
 }
 .steps {
+  opacity: 0;
   text-align: initial;
-
   font-size: 22px;
-  background-color: #eeeeee94;
+  background-color: #eeeeeec5;
   margin: 10em 0 10em 0;
   min-height: 150px;
   width: 50vw;
-  border: 1px solid blue;
+  border: 1px solid #5e5e5e;
   border-radius: 14px;
 }
 .steps p {
@@ -387,10 +537,17 @@ svg {
   background-color: #fb3640;
   border-radius: 5px;
 }
-.vacios {
+.suplentes {
   text-align: center;
   color: #fdfdfd;
-  background-color: #949494;
+  background-color: #41acda;
+  border-radius: 5px;
+}
+.vacios {
+  text-align: center;
+  color: black;
+  background-color: #d1d1d1;
+  border: 1px solid #949494;
   border-radius: 5px;
 }
 
