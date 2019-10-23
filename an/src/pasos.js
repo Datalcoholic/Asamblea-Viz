@@ -9,11 +9,11 @@ const textSteps = [
   },
   {
     step:
-      "De los 22 diputados que se encuentran en el exilio, en calidad de asilados , en la clandestinidad o detenidos solo dos diputados no cuentan con sus <spam class='suplentes'>suplentes</spam>.Que son el caso de los diputados <strong>Freddy Guevara</strong> (Asilado en la Embajada de Chile) y <strong>Sergio Vergara</strong> sus respectivos <spam class='suplentes'>suplentes</spam> <strong>nombre de suplente</strong> y <strong>nombre de suplente</strong> tambien se encuentran el el exilio por lo cual estos <strong>2</strong> curules quedarian <spam class='vacios'>vacios</spam>."
+      "De los 22 diputados que se encuentran en el exilio, en calidad de asilados , en la clandestinidad o detenidos solo dos diputados no cuentan con sus <spam class='suplentes'>suplentes</spam>.Que son el caso de los diputados <strong>Freddy Guevara</strong> (Asilado en la Embajada de Chile) y <strong>Sergio Vergara</strong> sus respectivos <spam class='suplentes'>suplentes</spam> <strong>Juan Andrés Mejía</strong> y <strong>Rosmit Mantilla</strong> tambien se encuentran el el exilio por lo cual estos <strong>2</strong> curules quedarian <spam class='vacios'>vacios</spam>."
   },
   {
     step:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia quaerat ullam, esse illo sed obcaecati tenetur quae iste expedita similique, velit voluptas excepturi et debitis corrupti atque repudiandae accusantium. Ex."
+      "Julio Cesar Reyes Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia quaerat ullam, esse illo sed obcaecati tenetur quae iste expedita similique, velit voluptas excepturi et debitis corrupti atque repudiandae accusantium. Ex."
   }
 ];
 

@@ -46,12 +46,14 @@ export default {
       bancadas: ["oposicion", "oposicion minoritaria", "GPP", "Disidentes GGP"],
       bancadasCS: [
         "GPP",
-        "oposicion minoritaria",
+        "oposicion minoritaria" || "CONCERTACION",
         "Disidentes GPP",
         "oposicion"
       ],
       newValue: [],
-      oldValue: []
+      oldValue: [],
+      oldDipElement: [],
+      newDipElement: []
     };
   },
 
@@ -63,6 +65,7 @@ export default {
     this.enterStep("#step_1");
     this.animationStep2("#step_2");
     this.animationStep3("#step_3");
+    this.animationStep4("#step_4");
 
     // Load the data
     d3.csv("/Data/consolidado.csv", data => ({
@@ -114,6 +117,12 @@ export default {
       // console.log("new", newValue[0].count);
       // console.log("old", oldValue[0].count);
     }
+
+    // elDipDisOpo(newValue, oldValue) {
+    //   const elem = Array.from(this.$el.querySelectorAll(".diputados"));
+    //   this.oldDipElement = oldValue;
+    //   this.newDipElement = newValue;
+    // }
   },
   methods: {
     //Animaciones
@@ -156,7 +165,7 @@ export default {
             stagger: { amount: 0.8, from: 0 }
           })
             .fromTo(
-              [".txtBackground", ".count-container", ".count"],
+              [".txtBackground", ".count-container", ".count", ".nDip"],
               0.8,
               { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
               { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
@@ -241,32 +250,26 @@ export default {
         .scene({
           triggerElement: triEl,
           triggerHook: 0.5
-          //duration: "300px"
+          //duration: "200px"
         })
         .setTween(tl)
         .on("enter", () => {
           //Get diputados clandestinidad,exilio, asilo y detenido MUD
           const bar = this.plotDiputados[0].diputados;
-          const superBar = bar.filter(
+          const sinCurulesVacios = bar.filter(
             d =>
-              d.estadoLegalPrincipal === "asilo" ||
-              d.estadoLegalPrincipal === "exilio" ||
-              d.estadoLegalPrincipal === "clandestinidad" ||
-              d.estadoLegalPrincipal === "detenido"
-          );
-          const curulesVacios = superBar.filter(
-            d =>
-              d.estadoLegalSuplente === "asilo" ||
-              d.estadoLegalSuplente === "exilio" ||
-              d.estadoLegalSuplente === "clandestinidad" ||
-              d.estadoLegalSuplente === "detenido"
+              (d.estadoLegalPrincipal !== "asilo" ||
+                d.estadoLegalPrincipal !== "exilio" ||
+                d.estadoLegalPrincipal !== "clandestinidad" ||
+                d.estadoLegalPrincipal !== "detenido") &&
+              d.estadoLegalSuplente !== "exilio"
           );
 
           // Change count
           this.$set(
             this.diputadosXBancadas[0],
             "count",
-            this.diputadosXBancadas[0].count - curulesVacios.length
+            sinCurulesVacios.length
           );
           //console.log("dipMUD", curulesVacios);
           //Get elements to animate
@@ -294,114 +297,157 @@ export default {
             );
           });
 
-          console.log("elements", dipVacio);
-
           // Add bancada
-          this.diputadosXBancadas.splice(1, 0, {
-            key: "oposicion minoritaria",
-            value: []
-          });
+          if (this.diputadosXBancadas.length === 2) {
+            this.diputadosXBancadas.splice(1, 0, {
+              key: "OPOSICION MINORITARIA",
+              value: null,
+              count: 0
+            });
+          }
           //Animate
-          tl.set("#over", { zindex: 10 });
-          tl.to([dipCondicion], 0.7, {
-            fill: "#41acda"
+
+          tl.set(".over", { zindex: 10 });
+          tl.to([dipCondicion, dipVacio], 1, {
+            scale: 2.5,
+            stroke: "#ffffff",
+            x: i => {
+              const cons = [...dipCondicion, ...dipVacio];
+              const foo = (i % 5) * 65;
+              return cons[i].getAttribute("x") * -1 + foo;
+            },
+            y: i => {
+              console.log("div", ~~(i / 5));
+              const cons = [...dipCondicion, ...dipVacio];
+              const foo = ~~(i / 5) * 62;
+              return cons[i].getAttribute("y") * -1 + foo;
+            }
           })
-            .to(dipVacio, 1, {
-              scale: 2.5,
+            .staggerTo(dipCondicion, 0.7, {
+              fill: "#41acda",
+              stagger: { amount: 0.5 }
+            })
+            .staggerTo(dipVacio, 0.7, {
               fill: "#d1d1d1",
               stroke: "#949494",
-              x: i => {
-                return (i * i + 1) * 10;
-              }
+              stagger: { amount: 0.5 },
+              zIndex: 10
             })
-            .to(dipVacio, 0.7, { scale: 1, x: 0 });
-
-          //this.$set(this.diputadosXBancadas[1], "value", superBar);
-        })
-        .on("leave", () => {
-          //Get elements to animate
-          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
-          const dipconcertacion = foo.filter(
-            d => d.getAttribute("bancada") === "concertacion"
-          );
-
-          tl.to(dipconcertacion, 1, {
-            transformOrigin: "50% 50%",
-            opacity: 1,
-            stagger: { amount: 0.8, from: 0 }
-          }).fromTo(
-            [
-              "#oposicion-minoritaria.txtBackground",
-              "#oposicion-minoritaria.count-container",
-              "#oposicion-minoritaria.count"
-            ],
-            0.8,
-            { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
-            { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
-
-            "-=0.9"
-          );
+            .to([dipCondicion, dipVacio], 0.7, {
+              scale: 1,
+              x: 0,
+              y: 0
+            });
         });
 
       this.$scrollmagic.addScene(sceneStep3);
     },
-    animationStep(triEl) {
+    animationStep4(triEl) {
       //Set timeline
       const tl = new TimelineMax();
 
       //Set Scrollmagic
-      const sceneStep3 = this.$scrollmagic
+      const sceneStep4 = this.$scrollmagic
         .scene({
           triggerElement: triEl,
-          triggerHook: 0.5,
-          duration: "300px"
+          triggerHook: 0.5
         })
+        .setTween(tl)
         .on("enter", () => {
           //Get diputados disidentes MUD
-          const bar = this.plotDiputados[0].diputados;
-          const superBar = bar.filter(d => d.bancada === "CONCERTACION");
+
+          //this.diputadosXBancadas[1].value.push(opoMinoritaria);
 
           //Get elements to animate
           const foo = Array.from(this.$el.querySelectorAll(".diputados"));
-          const dipconcertacion = foo.filter(
-            d => d.getAttribute("bancada") === "concertacion"
-          );
 
-          // Add bancada
-          this.diputadosXBancadas.splice(1, 0, {
-            key: "oposicion minoritaria",
-            value: []
-          });
+          const dipApCc = foo.filter(
+            d => d.getAttribute("diputado") === "Julio Cesar Reyes"
+          );
+          const opoMin = foo.filter(
+            d =>
+              d.getAttribute("bancada") === "CONCERTACION" &&
+              d.getAttribute("diputado") !== "Julio Cesar Reyes"
+          );
+          console.log("dip", dipApCc);
+          console.log("nodip", opoMin);
+
+          const test = this.newValue[1].diputados;
+
           //Animate
-
-          //this.$set(this.diputadosXBancadas[1], "value", superBar);
-        })
-        .on("leave", () => {
-          //Get elements to animate
-          const foo = Array.from(this.$el.querySelectorAll(".diputados"));
-          const dipconcertacion = foo.filter(
-            d => d.getAttribute("bancada") === "concertacion"
-          );
-
-          tl.to(dipconcertacion, 1, {
+          tl.to(opoMin, 1, {
             transformOrigin: "50% 50%",
             opacity: 1,
             stagger: { amount: 0.8, from: 0 }
-          }).fromTo(
-            [
-              "#oposicion-minoritaria.txtBackground",
-              "#oposicion-minoritaria.count-container",
-              "#oposicion-minoritaria.count"
-            ],
-            0.8,
-            { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
-            { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
+          })
+            .fromTo(
+              [
+                "#oposicion-minoritaria.txtBackground",
+                "#oposicion-minoritaria.count-container",
+                "#oposicion-minoritaria.count",
+                "#oposicion-minoritaria.nDip"
+              ],
+              0.8,
+              { transformOrigin: "50% 0%", scaleY: 0, opacity: 0 },
+              { transformOrigin: "50% 0%", scaleY: 1, opacity: 1 },
 
-            "-=0.9"
+              "-=0.9"
+            )
+            .to([dipApCc, opoMin], 1, {
+              scale: 2.5
+            })
+            .staggerTo(opoMin, 1, { fill: "#772271", stagger: { amount: 0.5 } })
+            .to(
+              opoMin,
+              1,
+              //REVISAR:
+              {
+                x: i => {
+                  let resetX = opoMin[i].getAttribute("x") * -1;
+                  let newpos = resetX + i * 30;
+                  return newpos + this.plotDiputados[1].groupX - 65;
+                },
+                y: i => {
+                  //console.log("gsap", opoMin[i].getAttribute("y"));
+                  return opoMin[i].getAttribute("y") * -1;
+                }
+              }
+            )
+
+            .to([opoMin, dipApCc], 1, { scale: 1 });
+
+          //Diputados disidentes
+          const dip = this.plotDiputados[0].diputados;
+          const opoMinoritaria = dip.filter(
+            d =>
+              d.bancada === "CONCERTACION" && d.diputado !== "Julio Cesar Reyes"
           );
+
+          this.$set(this.diputadosXBancadas[1], "value", opoMinoritaria);
+
+          const opoSinMinoritaria_paso1 = dip.filter(
+            d => d.bancada !== "CONCERTACION"
+          );
+
+          const opoSinMinoritaria_paso2 = dip.filter(
+            d => d.diputado === "Julio Cesar Reyes"
+          );
+
+          const opoSinMinoritaria = [
+            ...opoSinMinoritaria_paso1,
+            ...opoSinMinoritaria_paso2
+          ];
+
+          this.$set(this.diputadosXBancadas[0], "diputados", opoSinMinoritaria);
+          this.$set(
+            this.diputadosXBancadas[0],
+            "count",
+            opoSinMinoritaria.length - 5
+          );
+          this.$set(this.diputadosXBancadas[1], "count", opoMinoritaria.length);
         });
 
-      this.$scrollmagic.addScene(sceneStep3);
+      this.$scrollmagic.addScene(sceneStep4);
     },
     swichtBancadas(ban) {
       switch (ban) {
@@ -455,7 +501,14 @@ export default {
             estadoLegalSuplente: obj.estadoLegalSuplente,
             x: i * horizontalGap,
             y: index * verticalGap,
-            fill: this.bancadaColorScale(obj.bancada2.toLowerCase())
+            //fill: this.bancadaColorScale(obj.bancada2.toLowerCase())
+            fill: Object.keys(obj).includes("bancada2")
+              ? this.bancadaColorScale(obj.bancada2.toLowerCase())
+              : this.bancadaColorScale(
+                  obj.bancada.toLowerCase() === "concertacion"
+                    ? "oposicion minoritaria"
+                    : obj.bancada.toLowerCase()
+                )
           });
         });
       });
@@ -508,12 +561,16 @@ svg {
 }
 
 .count-container {
-  font-size: 38px;
+  font-size: 32px;
   font-weight: 600;
 }
 .count {
   font-size: 60px;
   font-weight: 600;
+}
+
+.nDip {
+  font-size: 18px;
 }
 .diputados {
   /* transform: scale(1); */

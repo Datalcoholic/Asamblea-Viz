@@ -1,6 +1,6 @@
 <template>
   <div>
-    <svg :height="svg.height" :width="svg.width" fill="#e6e6e6" id="over">
+    <svg :height="svg.height" :width="svg.width" fill="#e6e6e6" class="over">
       <template v-for="ban in plotDiputados">
         <g
           :id="ban.bancada.toLowerCase().split(' ').join('-')"
@@ -22,13 +22,14 @@
             :edoLegalPrincipal="dip.estadoLegalPrincipal"
             :edoLegalSuplente="dip.estadoLegalSuplente"
             :bancada="dip.bancada"
+            :diputado="dip.diputado"
             ref="dip"
           />
           <rect
             class="txtBackground"
             :y="400"
             width="295"
-            height="180"
+            height="150"
             :fill="ban.banColor"
             rx="8"
             ry="8"
@@ -42,7 +43,7 @@
             :id="ban.bancada.toLowerCase().split(' ').join('-')"
           >{{ban.bancada}}</text>
           <text
-            class="cambiar"
+            class="nDip"
             x="12"
             :y="470"
             fill="#ffffff"
@@ -52,7 +53,7 @@
           <text
             class="count"
             x="12"
-            :y="540"
+            :y="525"
             fill="#ffffff"
             :id="ban.bancada.toLowerCase().split(' ').join('-')"
           >{{ban.count}}</text>
