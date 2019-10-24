@@ -13,7 +13,11 @@ const textSteps = [
   },
   {
     step:
-      "Julio Cesar Reyes Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia quaerat ullam, esse illo sed obcaecati tenetur quae iste expedita similique, velit voluptas excepturi et debitis corrupti atque repudiandae accusantium. Ex."
+      "De los partidos que el pasado 16 de Septiembre firmaron el acurdo de la Casa Amarilla, solo cuentan con representacion en la <strong>Asamblea Nacional</strong> Avanzada Progresista (AP) con <strong>2</strong> diputados y el partido liderado por el diputado <spam id='om'>Timoteo Zambrano</spam>, Cambiemos (CMC) con <strong>6</strong> diputados."
+  },
+  {
+    step:
+      "Pero ya el diputado <strong>Julio Cesar Reyes</strong> por AP habia demostrado descontento con la posicion de su partido politico<br/><blockquote class='twitter-tweet'><p lang='es' dir='ltr'>La supuesta mesa de diálogo instalada por quienes usurpan el poder con algunos sectores políticos, no tiene el respaldo de la mayoría del país.Como diputados de la <a href='https://twitter.com/AsambleaVE?ref_src=twsrc%5Etfw'>@AsambleaVE</a> rechazamos esta acción desesperada que busca minar nuestra unidad y dar legitimidad a quien no la tiene.</p>&mdash; Dip. Julio César Reyes (@JulioCesar_ve) <a href='https://twitter.com/JulioCesar_ve/status/1173731148670935047?ref_src=twsrc%5Etfw'>September 16, 2019</a></blockquote> <script async src='https://platform.twitter.com/widgets.js' charset='utf-8'></script><br/> Por lo que deja a la bancada de la <spam id='om'>oposición minoritaria</spam> con <strong>7</strong> diputados."
   }
 ];
 

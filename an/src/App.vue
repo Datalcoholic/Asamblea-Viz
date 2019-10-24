@@ -3,7 +3,7 @@
   <div id="app">
     <div class="container1">
       <div class="chart-container">
-        <h1>Composicion de la Asamblea Nacional</h1>
+        <h1>COMPOSICIÓN DE LA ASAMBLEA NACIONAL</h1>
         <chart v-bind="{svg, plotDiputados}" class="chart" />
       </div>
       <div class="steps-container">
@@ -18,6 +18,12 @@
         </div>
       </div>
     </div>
+    <!-- <div class="presentacion">
+      <div class="disclaimer">
+        <img src="./assets/warning.svg" alt="warning" class="warning" />
+        <p>Esta visualización esta realizada solo con fines demostrativos, la recoleccion de los datos de diputados todavia esta en progreso</p>
+      </div>
+    </div>-->
   </div>
 </template>
 
@@ -231,7 +237,7 @@ export default {
               this.diputadosXBancadas[0],
               0.7,
               {
-                count: this.oldValue[0].count,
+                count: this.oldValue[0].count + 1,
                 roundProps: "count",
                 ease: Power3.easeOut
               }
@@ -337,6 +343,11 @@ export default {
               scale: 1,
               x: 0,
               y: 0
+            })
+            .from(this.diputadosXBancadas[0], 0.7, {
+              count: this.newValue[0].count,
+              roundProps: "count",
+              ease: Power3.easeOut
             });
         });
 
@@ -400,7 +411,7 @@ export default {
             .to(
               opoMin,
               1,
-              //REVISAR:
+
               {
                 x: i => {
                   let resetX = opoMin[i].getAttribute("x") * -1;
@@ -414,7 +425,18 @@ export default {
               }
             )
 
-            .to([opoMin, dipApCc], 1, { scale: 1 });
+            .to([opoMin, dipApCc], 1, { scale: 1 })
+            .from(this.diputadosXBancadas[0], 0.7, {
+              count: this.newValue[0].count,
+              roundProps: "count",
+              ease: Power3.easeOut
+            });
+
+          tl.from(this.diputadosXBancadas[1], 0.7, {
+            count: 0,
+            roundProps: "count",
+            ease: Power3.easeOut
+          });
 
           //Diputados disidentes
           const dip = this.plotDiputados[0].diputados;
@@ -445,6 +467,14 @@ export default {
             opoSinMinoritaria.length - 5
           );
           this.$set(this.diputadosXBancadas[1], "count", opoMinoritaria.length);
+          // Add bancada
+          // if (this.diputadosXBancadas.length === 3) {
+          //   this.diputadosXBancadas.splice(2, 0, {
+          //     key: "DISIDENTES GPP",
+          //     value: null,
+          //     count: 0
+          //   });
+          // }
         });
 
       this.$scrollmagic.addScene(sceneStep4);
@@ -553,6 +583,7 @@ export default {
 }
 
 .chart-container {
+  margin-left: 120px;
   position: sticky;
   top: 0;
 }
@@ -594,6 +625,12 @@ svg {
   background-color: #fb3640;
   border-radius: 5px;
 }
+#om {
+  text-align: center;
+  color: #fdfdfd;
+  background-color: #772271;
+  border-radius: 5px;
+}
 .suplentes {
   text-align: center;
   color: #fdfdfd;
@@ -612,5 +649,32 @@ svg {
 #oposicion-minoritaria.count-container,
 #oposicion-minoritaria.count {
   opacity: 0;
+}
+
+.presentacion {
+  position: relative;
+}
+.presentacion:after {
+  content: " ";
+  z-index: 10;
+  display: block;
+  position: absolute;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #08080886;
+}
+.warning {
+  height: 50px;
+  width: 50px;
+}
+
+.disclaimer {
+  z-index: 20;
+  background: #ffffff;
+  height: 120px;
+  width: 500px;
+  border: 1px solid black;
 }
 </style>
